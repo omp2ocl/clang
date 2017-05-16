@@ -116,7 +116,7 @@ std::string getClangFullRepositoryVersion() {
 }
 
 std::string getClangFullVersion() {
-  return getClangToolFullVersion("gpuclang");
+  return getClangToolFullVersion("aclang");
 }
 
 std::string getClangToolFullVersion(StringRef ToolName) {
@@ -125,7 +125,7 @@ std::string getClangToolFullVersion(StringRef ToolName) {
 #ifdef CLANG_VENDOR
   OS << CLANG_VENDOR;
 #endif
-    OS << ToolName << " version 2.3 (based on clang " CLANG_VERSION_STRING ") "
+    OS << ToolName << " version 3.5 (based on clang " CLANG_VERSION_STRING ") "
        << getClangFullRepositoryVersion();
 
   // If vendor supplied, include the base LLVM version as well.
