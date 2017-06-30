@@ -1,4 +1,5 @@
-//===--- CGMPtoGPURuntime.h - Interface to OpenMP to GPU Runtime -*- C++ -*-===//
+//===--- CGMPtoGPURuntime.h - Interface to OpenMP to GPU Runtime -*- C++
+//-*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -16,12 +17,12 @@
 #ifndef CLANG_CODEGEN_MPTOGPU_H
 #define CLANG_CODEGEN_MPTOGPU_H
 
+#include "CodeGenFunction.h"
+#include "CodeGenModule.h"
 #include "clang/AST/Type.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
-#include "CodeGenModule.h"
-#include "CodeGenFunction.h"
 
 namespace llvm {
 class AllocaInst;
@@ -38,33 +39,37 @@ class Value;
 } // namespace llvm
 
 namespace {
-  typedef void(_set_default_device)(int32_t id);
-  typedef int32_t(_get_num_devices)();
-  typedef int32_t(_get_num_cores)(int32_t A, int32_t B, int32_t C, int32_t T);
-  typedef int32_t(_get_default_device)();
-  typedef void(_cldevice_init)(int32_t verbose);
-  typedef void(_cldevice_finish)();
-  typedef int32_t(_cl_create_read_only)(int64_t size);
-  typedef int32_t(_cl_create_write_only)(int64_t size);
-  typedef int32_t(_cl_offloading_read_only)(int64_t size, void* loc);
-  typedef int32_t(_cl_offloading_write_only)(int64_t size, void* loc);
-  typedef int32_t(_cl_create_read_write)(int64_t size);
-  typedef int32_t(_cl_offloading_read_write)(int64_t size, void* loc);
-  typedef int32_t(_cl_read_buffer)(int64_t size, int32_t id, void* loc);
-  typedef int32_t(_cl_write_buffer)(int64_t size, int32_t id, void* loc);
-  typedef int32_t(_cl_create_program)(char* str);
-  typedef int32_t(_cl_create_kernel)(char* str);
-  typedef int32_t(_cl_set_kernel_args)(int32_t nargs);
-  typedef int32_t(_cl_set_kernel_arg)(int32_t pos, int32_t index);
-  typedef int32_t(_cl_set_kernel_hostArg)(int32_t pos, int32_t size, void* loc);
-  typedef int32_t(_cl_execute_kernel)(int64_t size1, int64_t size2, int64_t size3, int32_t dim);
-  typedef int32_t(_cl_execute_tiled_kernel)(int32_t wsize0, int32_t wsize1, int32_t wsize2, int32_t block0, int32_t block1, int32_t block2, int32_t dim);
-  typedef void(_cl_release_buffers)(int32_t upper);
-  typedef void(_cl_release_buffer)(int32_t index);
-
-    typedef int32_t(_cl_get_threads_blocks)(int32_t *threads, int32_t *blocks, int32_t *bytesthreads,
-                                            int32_t *bytesblocks, int64_t size, int32_t bytes);
-}
+typedef void(_set_default_device)(int32_t id);
+typedef int32_t(_get_num_devices)();
+typedef int32_t(_get_num_cores)(int32_t A, int32_t B, int32_t C, int32_t T);
+typedef int32_t(_get_default_device)();
+typedef void(_cldevice_init)(int32_t verbose);
+typedef void(_cldevice_finish)();
+typedef int32_t(_cl_create_read_only)(int64_t size);
+typedef int32_t(_cl_create_write_only)(int64_t size);
+typedef int32_t(_cl_offloading_read_only)(int64_t size, void *loc);
+typedef int32_t(_cl_offloading_write_only)(int64_t size, void *loc);
+typedef int32_t(_cl_create_read_write)(int64_t size);
+typedef int32_t(_cl_offloading_read_write)(int64_t size, void *loc);
+typedef int32_t(_cl_read_buffer)(int64_t size, int32_t id, void *loc);
+typedef int32_t(_cl_write_buffer)(int64_t size, int32_t id, void *loc);
+typedef int32_t(_cl_create_program)(char *str);
+typedef int32_t(_cl_create_kernel)(char *str);
+typedef int32_t(_cl_set_kernel_args)(int32_t nargs);
+typedef int32_t(_cl_set_kernel_arg)(int32_t pos, int32_t index);
+typedef int32_t(_cl_set_kernel_hostArg)(int32_t pos, int32_t size, void *loc);
+typedef int32_t(_cl_execute_kernel)(int64_t size1, int64_t size2, int64_t size3,
+                                    int32_t dim);
+typedef int32_t(_cl_execute_tiled_kernel)(int32_t wsize0, int32_t wsize1,
+                                          int32_t wsize2, int32_t block0,
+                                          int32_t block1, int32_t block2,
+                                          int32_t dim);
+typedef void(_cl_release_buffers)(int32_t upper);
+typedef void(_cl_release_buffer)(int32_t index);
+typedef int32_t(_cl_get_threads_blocks)(int32_t *threads, int32_t *blocks,
+                                        int32_t *sthreads, int32_t *sblocks,
+                                        int64_t size, int32_t bytes);
+} // namespace
 
 namespace clang {
 namespace CodeGen {
@@ -77,7 +82,7 @@ class CGMPtoGPURuntime {
 
 protected:
   CodeGenModule &CGM;
-  
+
 public:
   enum MPtoGPURTLFunction {
     MPtoGPURTL_set_default_device,
@@ -105,7 +110,7 @@ public:
     MPtoGPURTL_cl_release_buffer,
     MPtoGPURTL_cl_get_threads_blocks
   };
-  
+
   explicit CGMPtoGPURuntime(CodeGenModule &CGM);
   virtual ~CGMPtoGPURuntime() {}
 
@@ -114,32 +119,32 @@ public:
   /// \return Specified function.
   llvm::Value *CreateRuntimeFunction(MPtoGPURTLFunction Function);
 
-  virtual llvm::Value* Set_default_device();
-  virtual llvm::Value* Get_num_devices();
-  virtual llvm::Value* Get_num_cores();
-  virtual llvm::Value* Get_default_device();
-  virtual llvm::Value* cldevice_init();
-  virtual llvm::Value* cldevice_finish();
-  virtual llvm::Value* cl_create_read_only();
-  virtual llvm::Value* cl_create_write_only();
-  virtual llvm::Value* cl_offloading_read_only();
-  virtual llvm::Value* cl_offloading_write_only();
-  virtual llvm::Value* cl_create_read_write();
-  virtual llvm::Value* cl_offloading_read_write();
-  virtual llvm::Value* cl_read_buffer();
-  virtual llvm::Value* cl_write_buffer();
-  virtual llvm::Value* cl_create_program();
-  virtual llvm::Value* cl_create_kernel();
-  virtual llvm::Value* cl_set_kernel_args();
-  virtual llvm::Value* cl_set_kernel_arg();
-  virtual llvm::Value* cl_set_kernel_hostArg();
-  virtual llvm::Value* cl_execute_kernel();
-  virtual llvm::Value* cl_execute_tiled_kernel();
-  virtual llvm::Value* cl_release_buffers();  
-  virtual llvm::Value* cl_release_buffer();
-  virtual llvm::Value* cl_get_threads_blocks();
+  virtual llvm::Value *Set_default_device();
+  virtual llvm::Value *Get_num_devices();
+  virtual llvm::Value *Get_num_cores();
+  virtual llvm::Value *Get_default_device();
+  virtual llvm::Value *cldevice_init();
+  virtual llvm::Value *cldevice_finish();
+  virtual llvm::Value *cl_create_read_only();
+  virtual llvm::Value *cl_create_write_only();
+  virtual llvm::Value *cl_offloading_read_only();
+  virtual llvm::Value *cl_offloading_write_only();
+  virtual llvm::Value *cl_create_read_write();
+  virtual llvm::Value *cl_offloading_read_write();
+  virtual llvm::Value *cl_read_buffer();
+  virtual llvm::Value *cl_write_buffer();
+  virtual llvm::Value *cl_create_program();
+  virtual llvm::Value *cl_create_kernel();
+  virtual llvm::Value *cl_set_kernel_args();
+  virtual llvm::Value *cl_set_kernel_arg();
+  virtual llvm::Value *cl_set_kernel_hostArg();
+  virtual llvm::Value *cl_execute_kernel();
+  virtual llvm::Value *cl_execute_tiled_kernel();
+  virtual llvm::Value *cl_release_buffers();
+  virtual llvm::Value *cl_release_buffer();
+  virtual llvm::Value *cl_get_threads_blocks();
 };
-  
+
 /// \brief Returns an implementation of the OpenMP to GPU RTL for a given target
 CGMPtoGPURuntime *CreateMPtoGPURuntime(CodeGenModule &CGM);
 
